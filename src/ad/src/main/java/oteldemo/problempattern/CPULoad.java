@@ -64,6 +64,7 @@ public class CPULoad {
                 Logarithmizer logarithmizer = new Logarithmizer();
                 Thread thread = new Thread(logarithmizer);
                 thread.setDaemon(true);
+                thread.setPriority(Thread.MIN_PRIORITY);
                 thread.start();
                 runningWorkers.add(logarithmizer);
             }
@@ -96,7 +97,16 @@ public class CPULoad {
         @Override
         public void run() {
             while (shouldRun) {
-                Math.log(System.currentTimeMillis());
+                long end = System.nanoTime() + 50_000_000L;
+                while (shouldRun && System.nanoTime() < end) {
+                    Math.log(System.currentTimeMillis());
+                }
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
             }
         }
 
